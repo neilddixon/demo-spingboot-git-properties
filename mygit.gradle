@@ -1,0 +1,30 @@
+ext.gitGetHash = {
+    return runCmd('git rev-parse HEAD').trim()
+}
+
+ext.gitGetBranch = {
+    return runCmd('git branch --show-current').trim()
+}
+ext.gitGetCommitTimestamp = {
+    return runCmd('git log -n1 --pretty=format:%cd --date=unix').trim()
+}
+
+
+static String runCmd(def cmd) {
+    def sout = new StringBuffer()
+    def serr = new StringBuffer()
+
+//    System.out.println("Running command: ${cmd}")
+    def process = "${cmd}".execute()
+    process.consumeProcessOutput(sout, serr)
+    process.waitForProcessOutput()
+
+//    System.out << sout.toString()
+    System.err << serr.toString()
+
+    if (process.exitValue()) {
+        throw new GradleException("${cmd} returned an error")
+    }
+    return sout.toString()
+}
+
