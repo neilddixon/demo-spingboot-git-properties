@@ -1,0 +1,44 @@
+plugins {
+    id 'org.springframework.boot' version '2.5.1'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+
+}
+apply from: 'mygit.gradle'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task gitProperties(type: WriteProperties) {
+    def now = new Date().format('yyyy-MM-dd HH:mm:ss')
+    def epoch = new Date().toInstant().getEpochSecond()
+
+    outputs.upToDateWhen {false}
+    outputFile "$buildDir/resources/main/git.properties"
+    comment "LastModified Timestamp: ${now}"
+    property("git.commit.id", git.getHash())
+    property("git.commit.branch", git.getBranch())
+    property("git.commit.time", git.getCommitTimestamp())
+    property("git.tags", git.getTags())
+    property("git.build.time",  epoch)
+}
+
+processResources.dependsOn(gitProperties)
+bootJar.dependsOn(gitProperties)
+
+

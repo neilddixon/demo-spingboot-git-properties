@@ -1,0 +1,40 @@
+ext.git = [
+
+        getHash : {
+            return runCmd('git rev-parse HEAD').trim()
+        },
+
+        getBranch : {
+            return runCmd('git branch --show-current').trim()
+        },
+
+        getCommitTimestamp : {
+            return runCmd('git log -n1 --pretty=format:%cd --date=unix').trim()
+        },
+
+        getTags : {
+            def lineSeparator = "\n";
+            return runCmd("git tag -l").trim().replaceAll(lineSeparator,",")
+        }
+
+
+]
+
+static String runCmd(def cmd) {
+    def sout = new StringBuffer()
+    def serr = new StringBuffer()
+
+//    System.out.println("Running command: ${cmd}")
+    def process = "${cmd}".execute()
+    process.consumeProcessOutput(sout, serr)
+    process.waitForProcessOutput()
+
+//    System.out << sout.toString()
+    System.err << serr.toString()
+
+    if (process.exitValue()) {
+        throw new GradleException("${cmd} returned an error")
+    }
+    return sout.toString()
+}
+
